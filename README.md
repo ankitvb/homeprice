@@ -15,8 +15,11 @@ where y is the predicted output from the network and t is the target.
 
 As can be appreciated, the level of error is quite high for this to be a commercially viable application. The shortcomings are twofold, in terms of the model as well as data. 
 
-What is still missing in terms of method for a good prediction
-
 What is still missing in terms of data for a good prediction
-- need more data, curse of dimensionality
- 
+- just more raw data, curse of dimensionality
+- area (square footage) of the property and the year of construction for existing homes
+
+What is missing in terms of model
+- Model hyperparameter optimization, perhaps using a framework like Spearmint
+- Other supervised techniques, Regression trees probably being the most appropriate here
+- Explore unsupervised (clustering) methods 
