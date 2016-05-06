@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+
+	<div class=style1>
+	<h1>A capable assistant for a more confident home buying experience</h1>
+	<p>My proposal is to build an app for homebuyers looking for guidance on what to bid for a property. It would offer a functionality somewhat similar to what TrueCar provides for car buyers. In my view, there is a real need for such a product today, since the process is somewhat opaque from a buyer’s perspective.</p> 
+
+	<p>The user would input either a specific address, or specify general details such as the city, county, type of home (single family, condominium or town home), number of bedrooms etc., which I will call the home “feature set”. They would then be given an estimate of what they can expect to pay for such a property. The key is that the number should be fairly close to what the buyer would actually pay in a successful bid. In my observation, the estimates provided by the leading websites tend to be well off the mark in terms of what the property actually sells for, as well as the value assigned by professional valuers.</p> 
+
+	<p>I intend to achieve this by comparing with similar homes sold in the immediate neighborhood, which has been shown to be the strongest predictor of the sale price. The model would apply spatio-temporal weights to home sale price values, with sold homes of a similar feature set having the highest weights, as would the latest home sales compared to the older ones. Progressively smaller weights would be applied to sales in farther locations, at the level of city, county and region and to homes with different feature sets. This ensures locality, while still capturing the trends of the overall market.</p>  
+
+	<p>I used home price data from the Land Registry in the U.K. to motivate this approach compared to using generic indicators. As I show in the plots below, home price distributions in different areas can be dramatically different and the use of any kind of overall index fails to account for strong local variability. At best, such an index increases the prediction error. The strong local correlation (spatial and temporal) must be preserved by a prediction model. Figure 1 shows the variability in the smaller slices of the U.K. market compared to the overall. Price distribution for detached homes in London are naturally very different from terrace style homes in Oxford. Further, as seen in Figure 2, the temporal variability in a given location can also be significant. The year-on-year changes at the county level are quite different from that of the overall U.K. market, which was net positive. The variations at the district and city level (analyzed but not presented here) are even more dramatic.</p> 
+
+	<p>Although the dataset analysed here is for the U.K. (similar data for the U.S. was not readily available), the trends for the U.S. market are broadly similar and the analysis should carry over in a straightforward manner.</p>    
+
+	<a href="/" class="lang-logo">
+		<figure>
+		<img src="{% static 'figure_1.png'%}" height=800px width=800px>
+		<figcaption>Figure 1: Distribution of sold house prices overall and across different markets and property types. Distribution for detached homes in London looks very different from that of semi-detached homes in Cornwall. </figcaption>
+		</figure>
+	</a>
+
+	<a href="/" class="lang-logo">
+		<figure>
+			<img src="{% static 'figure_2.png'%}" height=400px width=600px>
+			<figcaption>Figure 2: Counties with largest net positive and negative changes in median home prices year-on-year (2015-2016) in the month of January. Inspite of the overall trend for the U.K. being net positive, deviations at the county, district and city levels were substantial.</figcaption>
+		</figure>
+	</a>
+
+
+
+
+	<p>  </p>
+
+    <h1> Neural network based prediction engine for home prices </h1>
+	<p><i>Method:</i><br>An artificial neural network was trained used to generate price predictions for a property based on its salient features such as location, date of purchase, type of property, whether it was new construction and whether it was bought outright or backed by a loan. Neural networks have been shown to perform as well or better than other techniques for regression type problems, the class to which our prediction problem here belongs. </p>
+
+	<p><i>Method details:</i><br>The open-source deep learning library by Nervana Systems Inc called <a href="http://neon.nervanasys.com/">Neon</a> was used in this work. The input feature vector consisted of the parameters mentioned above. Zip codes were converted to latitude/longitude coordinates using a dictionary. This approach also has the advantage of capturing the city, district and county without having to encode those features separately. Non-numerical parameters were encoded using one-hot encoding, a <a href="http://fastml.com/converting-categorical-data-into-numbers-with-pandas-and-scikit-learn/">standard practice</a> in deep learning for such parameters. The <a href="https://data.gov.uk/dataset/land-registry-monthly-price-paid-data">Price Paid dataset</a> for U.K. from 2015 was used for training and testing. The dataset contains almost 1,000,000 residential property transactions in the U.K. over the course of a year. The split between training, validation and testing was 60-20-20. The dataset was cleaned to remove any entries for which the above parameters were not available or were out of bounds. Further, extreme outliers with prices over &pound; 20,000,000 and under &pound;10,000 were excluded. Early stopping was used to prevent overfitting. The errors on the three sets are given below.</p>
+
+   <ul>
+   <li>Error on training set: 0.23&nbsp; </li>
+   <li>Error on validation set:&nbsp; 0.27</li>
+   <li>Error on test set:&nbsp; 0.26</li>
+   </ul>
+
+	<p>These errors were measured as the normalized L1 error: <span style='font-size:120%'>&Sigma;|y<sub>i</sub>-t<sub>i</sub>|&nbsp;/&nbsp;&Sigma;t<sub>i</sub></span> 
+	where <span style='font-size:120%'>y</span> is the predicted output from the network and <span style='font-size:120%'>t</span> is the target. The numerator of the error expression is the cost function for the training phase of the algorithm. As can be appreciated, the level of error is quite high for this to be a commercially viable application. The shortcomings are twofold, in terms of the model as well as data. </p>
+
+	<p><i>What is still missing?</i><br> Two of the most important pieces of data missing in the current dataset are the area (square footage) of the property and the year of construction for existing homes. A variety of other metrics are also available for assessing home values. The dimensionality of the input space also presents a problem as several input combinations did not have enough data for the network to learn their characteristics. Another problem is the volume of data. Neural networks are well known for requiring massive amounts of data for effective training. An order of magnitude more data points will be required to generate accurate predictions. On the model side, I attempted tweaking the network architecture to add more layers, changing activation functions and exploring parially versus fully connected layers, but the performance did not change appreciably. I would like to explore other approaches from supervised learning such as Regression Trees and unsupervised clustering-based approaches. If indeed training data is insufficient, an unsupervised approach may fare better. </p>
+
+    <h2> Home price estimator prototype</h2>
+	<form method="GET" action = "">	
+	<fieldset>		
+	<p>
+    	Valid UK Zip Code: <input id="zipcode" type="text" name="zipcode" value="{{zipcode}}"> &nbsp; (e.g. CV34 4JD)
+	</p>
+	<p>
+    	Type of property: <input id="type" type="text" name="type" value="{{type}}"> &nbsp; (e.g. T for Terrace style, D for detached, S for semi-detached, F for flat)
+	</p>
+	<p>
+    	Newly built or existing: <input id="newbuild" type="text" name="newbuild" value="{{new_build}}"> &nbsp; (e.g. N for existing, Y for new)
+	</p>
+	<p>
+    	Type of Estate: <input id="estatetype" type="text" name="estatetype" value="{{est_type}}"> &nbsp; (e.g. F for freehold, L for lease)
+	</p>
+	<input type="submit" value="Submit">
+    <br></br>
+	<p> <span style='color:greenp; font-size:125%; font-weight:bold'>Projected price is </span> 
+	    <span style='font-size:125%; font-weight:bold'>&pound;&nbsp;{{price_estimate}} </span></p>
+	</fieldset>
+    </form>	
+
+	<p>{{zipcode}} </p>
+
+    <h1>Unsupervised learning: Agglomerative clustering </h1>
+	<p>Clustering is a form of unsupervised learning that does not depend on labeled data. This is attractive when we don't have enough labeled data for a supervised algorithm to be effective. Clustering is broadly divided into two groups: partition based and hierarchical. Hierarchical methods have the advantage of not requiring the number of clusters to be known apriori. The algorithm finds partitions through the optimization of a cost function. Below I show agglomerative hierarchical clustering applied to the home price dataset. Agglomerative clustering performs a hierarchical clustering using a bottom up approach: each observation starts in its own cluster, and clusters are successively merged together. The merging strategy depends on the linkage criteria. Here I use the so called Ward linkage, which minimizes the sum of squared differences within all clusters.</p>
+   
+	<p> One of the drawbacks of hierarchical methods is that they tend to be more expensive (<i>O(n<sup>2</sup></i>) or more where <i>n</i> is the number of samples) compared to simpler methods like k-means clustering. For this reason, 10,000 samples were chosen at random for the plot below rather than the full dataset of approximately 1,000,000 samples. The analysis was repeated for other sets of independently chosen sample sets of the same size, and the cluster shapes were quite consistent with the plot shown here. Further a two-dimensional spectral embedding was imposed on the high dimensional clustered data to enable this visualization.
+
+	<p> As can be seen in Figure 3, seven clusters can be identified in the data. Each cluster is shown with a different color. This can now serve as an input to a partition based algorithm which can run faster on the whole dataset. </p>
+
+    <a href="/" class="lang-logo">
+       <figure>
+       <img src="{% static 'figure_3.png'%}" height=600px width=600px>
+       <figcaption>Figure 3: Agglomerative clustering with two dimensional spectral embedding applied to 10,000 randomly chosen points from the house price dataset </figcaption>
+       </figure>
+   </a>
+
+	</div>
+	
+{% endblock %}
