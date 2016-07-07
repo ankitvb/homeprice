@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Theme Made By www.w3schools.com - No Copyright -->
+  <title>SmartBidder - The smarter way to buy property</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Style sheets for libraries -->
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link href="http://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" />
+  <!--Local CSS for main page and modal -->
+  <link rel="stylesheet" href="{{ url_for('static',filename='styles/company.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static',filename='styles/modal.css') }}" type="text/css">
+
+  <!-- Javascript libs and source -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="http://maps.googleapis.com/maps/api/js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+  <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+  <script src="{{ url_for('static',filename='js/homeprice.js') }}"> </script>
+  <script src="{{ url_for('static',filename='js/plots.js') }}"> </script>
+
+
+</head>
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
+
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#myPage">HOME</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#estimate">ESTIMATE</a></li>
+        <li><a href="#trends">TRENDS</a></li>
+        <li><a href="#techniques">TECHNIQUES</a></li>
+        <li><a href="#data">DATA</a></li>
+        <li><a href="#contact">CONTACT</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div id="estimate" class="jumbotron text-center">
+  <h1>SmartBidder</h1>
+  <p>Looking for a home? Let us help you!</p>
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label class="control-label col-sm-offset-2 col-sm-3">Zipcode</label>
+        <div class="col-sm-2">
+            <input class="form-control" "size=50" placeholder="CV34 4JD" name="zip" value="{{zip}}" required>
+        </div>
+        <!--<div class="col-sm-offset-0 col-sm-2">
+          <a href="#" data-toggle="popover" data-trigger="focus" data-content="LE4&nbsp;3DU YO8&nbsp;9XP">examples</a>
+        </div>-->
+    </div>
+
+    <div class="form-group">
+      <label class="control-label col-sm-offset-2 col-sm-3" for="proptype">Property Type</label>
+        <div class="col-sm-2">
+          <select class="form-control" id="proptype" name="type" value="{{type}}" required>
+            <option value="F">Flat</option>
+            <option value="D">Detached</option>
+            <option value="S">Semi-detached</option>
+            <option value="T">Terrace</option>
+          </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+      <label class="control-label col-sm-offset-2 col-sm-3" for="newbuild">Newly Built</label>
+        <div class="col-sm-2">
+          <select class="form-control" id="newbuild" name="newbuild" value="{{newbuild}}" required>
+            <option value="N">No</option>
+            <option value="Y">Yes</option>
+          </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+      <label class="control-label col-sm-offset-2 col-sm-3" for="esttype">Estate Type</label>
+        <div class="col-sm-2">
+          <select class="form-control" id="esttype" name="esttype" value="{{esttype}}" required>
+            <option value="F">Freehold</option>
+            <option value="L">Lease</option>
+          </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-8">
+          <button type="button" id="search-btn" class="btn btn-danger" data-toggle="modal" data-target="#estimate-modal">Search</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Estimate Modal -->
+<div id="estimate-modal" class="modal" role="dialog">
+  <div id="myestimate-modal" class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Generating Estimate</h4>
+      </div>
+      <div class="modal-body text-center">
+        <div id="estimator">
+          <img src="{{ url_for('static',filename='images/spin.gif') }}">
+          <p>Fetching data...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!--Adding dashboard-->
+<div id="dashboard" class="container-fluid">
+    <div class="row">
+        <!--<div class="col-lg-12"> -->
+        <div class="col-lg-4">
+            <h1 class="page-header">DASHBOARD</h1>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading-estimate">
+                    <div class="row">
+                        <div class="col-xs-9">
+                            <div class="medium"> OUR ESTIMATE </div>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div id="myestimate" class="huge">&pound; 260,000</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">
+                    <!--<div class="panel-footer">
+                        <span class="pull-left"></span>
+                        <div class="clearfix"></div>
+                    </div>-->
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading-avg">
+                    <div class="row">
+                        <div class="col-xs-9">
+                            <div class="medium"> 5-YEAR AVERAGE </div>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div id="fiveyravg" class="huge">&pound; 260,000</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#">
+                    <!--<div class="panel-footer">
+                        <span class="pull-left"></span>
+                        <div class="clearfix"></div>
+                    </div>-->
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <div id="histogram">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+<!--Adding Google map-->
+        <div class="col-lg-6 col-md-6">
+          <h3>Most recent sale data </h3>
+            <table id="recent-sales" class="table table-responsive table-striped">
+            </table>
+        </div>
+
+        <div class="col-lg-6 col-md-6">
+        <h3> Area map </h3>
+            <!--<div id="google-map" class="col-lg-9 col-sm-offset-3">-->
+              <div id="googleMap" style="height:500px;width:100%;">
+              </div>
+            <!--</div>-->
+        </div>
+
+  </div>
+</div>
+
+<!-- Plot of mean home price in the in and out+in zip -->
+
+<div id="plots" class="container-fluid">
+  <div class="row">
+    <div class="col-lg-6 col-md-6">
+       <div id="meanYearlyPrice"> <!-- style="height:300px;width:50%;">-->
+       </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+       <div id="meanYearlyVol"> <!-- style="height:300px;width:50%;">-->
+       </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6 col-md-6 col-centered">
+       <div id="meanTypePrice"> <!-- style="height:300px;width:50%;">-->
+       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Container (Trends Section) -->
+<div id="trends" class="container-fluid">
+  <div class="row">
+    <!--<div class="col-sm-8">-->
+      <h2>TRENDS</h2>
+      <h4>Strong local variations</h4>
+      <p>As I show in the plots below, home price distributions in different areas can be dramatically different and the use of any kind of overall index fails to account for strong local variability. At best, such an index increases the prediction error. The strong local correlation (spatial and temporal) must be preserved by a prediction model. Figure 1 shows the variability in the smaller slices of the U.K. market compared to the overall. Price distribution for detached homes in London are naturally very different from terrace style homes in Oxford. </p>
+
+      <figure>
+        <img src="{{ url_for('static',filename='images/figure_1.png') }}" height=800px width=800px>
+        <figcaption>Figure 1: Distribution of sold house prices overall and across different markets and property types. Distribution for detached homes in London looks very different from that of semi-detached homes in Cornwall. </figcaption>
+      </figure>
+
+      <h4>Temporal variations</h4>
+      <p>As seen in Figure 2, the temporal variability in a given location can also be significant. The year-on-year changes at the county level are quite different from that of the overall U.K. market, which was net positive. The variations at the district and city level (analyzed but not presented here) are even more dramatic. </p>
+       <figure>
+       <img src="{{ url_for('static',filename='images/figure_2.png') }}" height=400px width=600px>
+       <figcaption>Figure 2: Counties with largest net positive and negative changes in median home prices year-on-year (2015-2016) in the month of January. Inspite of the overall trend for the U.K. being net positive, deviations at the county, district and city levels were substantial.</figcaption>
+       </figure>
+      <!--<br><button class="btn btn-default btn-lg">Get in Touch</button>-->
+    <!--</div>-->
+    <!--<div class="col-sm-4">
+      <span class="glyphicon glyphicon-signal logo"></span>
+    </div>-->
+  </div>
+</div>
+
+<!-- Container (Techniques section) -->
+<div id="techniques" class="container-fluid bg-grey">
+  <div class="row">
+    <div class="col-sm-4">
+      <figure>
+        <img src="{{ url_for('static',filename='images/Workflow.png') }}" height=325px width=400px>
+        <figcaption>Workflow schematic for SmartBidder</figcaption>
+      </figure>
+      <!--<span class="glyphicon glyphicon-globe logo slideanim"></span>-->
+    </div>
+    <div class="col-sm-8">
+      <h2><strong>TECHNIQUES</strong></h2><br>
+      <p class="lead" >As seen in the flow chart to the left, the inputs from the user are fed into a pre-trained neural network for a price prediction, which is shown in the green box to the left at the top of the dashboard. The same inputs are also fed to a Postgres database in the form of several SQL queries to extract information needed for the table, map and plots in the dashboard.</p>
+
+      <h4><strong>Neural Networks</strong><br>
+      <p>A neural network was trained used to generate price predictions for a property based on its salient features such as location, date of purchase, type of property, whether it was new construction and whether it was bought outright or backed by a loan. Neural networks have been shown to perform as well or better than other techniques for regression type problems, the class to which our prediction problem here belongs.</p>
+
+      <p>The open-source deep learning library called <a href="https://github.com/lmjohns3/theanets">Theanets</a> was used in this work. The input feature vector consisted of the parameters mentioned above. Zip codes were converted to latit    ude/longitude coordinates using a dictionary. This approach also has the advantage of capturing the city, district and county without having to encode those features separately. Non-numerical parameters were encoded using one-hot encoding, a <a href="http://fastml.com/converting-categorical-data-into-numbers-with-pandas-and-scikit-learn/">standard practice</a> in deep learning for such parameters.</p>
+
+      <p> The split between training, validation and testing was 60-20-20. The dataset was cleaned to remove any entries for which the above parameters were not available or were out of bounds. Further, extreme outliers with prices over &pound; 20,000,000 and under &pound;10,000 were excluded. Early stopping was used to prevent overfitting. The errors on the three sets are given below.</p>
+
+      <ul>
+      <li>Error on training set: 0.33&nbsp; </li>
+      <li>Error on validation set:&nbsp; 0.34</li>
+      <li>Error on test set:&nbsp; 0.36</li>
+      </ul>
+
+      <p>These errors were measured as the normalized L1 error: <span style='font-size:120%'>&Sigma;|y<sub>i</sub>-t<sub>i</sub>|&nbsp;/&nbsp;&Sigma;t<sub>i</sub></span>
+      where <span style='font-size:120%'>y</span> is the predicted output from the network and <span style='font-size:120%'>t</span> is the target. The numerator of the error expression is the cost function for the training phase of the algorithm.</p>
+
+      <h4><strong>Database<strong></h4>
+      <p class="lead"> The backend Postgres database forms the basis of most of the items displayed in the dashboard. The database consists of data from the past 5-1/2 years worth of home sales in England and Wales, which comes out to roughly about 5 million transactions. The database resides on <a href="http://www.heroku.com">Heroku</a> and is accessed through the <a href="https://devcenter.heroku.com/articles/heroku-postgresql">psycopg2</a> package as recommended by Heroku. Deployment was straightforward through add-on provisions.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Container (Data Section) -->
+<div id="data" class="container-fluid bg-grey">
+  <h2>DATA</h2>
+  <p>The price paid data from the <a href="https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads">Land Registry in the U.K.</a> was used for this study. Although the dataset analysed here is for the U.K. (similar data for the U.S. was not readily available), the trends for the U.S. market are broadly similar and the analysis should carry over in a straightforward manner. This data covers a large fraction of the total number of property transactions in England and Wales. Scotland is not included in this dataset. For each transaction, the dataset contains the following fields. </p>
+
+  <ol>
+   <li> Transaction ID </li>
+   <li> Price in GBP </li>
+   <li> Date </li>
+   <li> Postal code </li>
+   <li> House type (Flat, Detached, Semi-detached, Terrace)</li>
+   <li> Whether new construction</li>
+   <li> Estate Type (Freehold or Lease)</li>
+   <li> Primary Addressable Object Name (PAON)</li>
+   <li> Secondary Addressable Object Name (SAON)</li>
+   <li> Street </li>
+   <li> Locality </li>
+   <li> Town </li>
+   <li> District </li>
+   <li> County </li>
+   <li> Transaction Category </li>
+   <li> Record Status</li>
+  </ol>
+
+  <p> Of these, fields 2-7 are the most useful for machine learning techniques since they hold most of the predictive and analytical value. The postal codes were converted to Lat/Long representation with the help of this <a href="https://www.freemaptools.com/download-uk-postcode-lat-lng.htm">dictionary</a> </p>
+
+<script>
+var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+<footer class="container-fluid text-center">
+  <a href="#myPage" title="To Top">
+    <span class="glyphicon glyphicon-chevron-up"></span>
+  </a>
+  <p>Copyright &copy; 2016, Ankit Bhagatwala</p>
+</footer>
+
+
+<script>
+$(document).ready(function(){
+  // Add smooth scrolling to all links in navbar + footer link
+  $(".navbar a, footer a[href='#myPage']").on('click', function(event) {
+    // Make sure this.hash has a value before overriding default behavior
+    if (this.hash !== "") {
+      // Prevent default anchor click behavior
+      event.preventDefault();
+
+      // Store hash
+      var hash = this.hash;
+
+      // Using jQuery's animate() method to add smooth page scroll
+      // The optional number (900) specifies the number of milliseconds it takes to scroll to the specified area
+      $('html, body').animate({
+        scrollTop: $(hash).offset().top
+      }, 900, function(){
+
+        // Add hash (#) to URL when done scrolling (default click behavior)
+        window.location.hash = hash;
+      });
+    } // End if
+  });
+
+  $(window).scroll(function() {
+    $(".slideanim").each(function(){
+      var pos = $(this).offset().top;
+
+      var winTop = $(window).scrollTop();
+        if (pos < winTop + 600) {
+          $(this).addClass("slide");
+        }
+    });
+  });
+})
+</script>
+
+</body>
+</html>
